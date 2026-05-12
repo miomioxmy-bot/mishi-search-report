@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎯 密室行业近90天搜索数据分析报告</title>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-light: #818cf8;
+            --primary-dark: #4f46e5;
+            --secondary: #8b5cf6;
+            --accent: #a78bfa;
+            --bg: #0f172a;
+            --bg-card: #1e293b;
+            --bg-card-hover: #334155;
+            --text: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --border: #334155;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --gradient-1: linear-gradient(135deg, #6366f1, #8b5cf6);
+            --gradient-2: linear-gradient(135deg, #3b82f6, #6366f1);
+            --gradient-3: linear-gradient(135deg, #8b5cf6, #ec4899);
+            --gradient-4: linear-gradient(135deg, #06b6d4, #6366f1);
+            --shadow: 0 4px 6px -1px rgba(0,0,0,0.3), 0 2px 4px -2px rgba(0,0,0,0.2);
+            --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.4), 0 4px 6px -4px rgba(0,0,0,0.3);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        .container { max-width: 1400px; margin: 0 auto; padding: 24px; }
+
+        /* Header */
+        .header {
+            text-align: center; padding: 48px 24px;
+            background: linear-gradient(135deg, rgba(99,102,241,0.15), rgba(139,92,246,0.15));
+            border-radius: 24px; border: 1px solid rgba(99,102,241,0.2);
+            margin-bottom: 32px; position: relative; overflow: hidden;
+        }
+        .header::before {
+            content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+            background: radial-gradient(circle, rgba(99,102,241,0.08) 0%, transparent 50%);
+            animation: pulse 4s ease-in-out infinite;
+        }
+        @keyframes pulse { 0%,100%{transform:scale(1);opacity:0.5} 50%{transform:scale(1.1);opacity:1} }
+        .header h1 {
+            font-size: 2.5rem; font-weight: 800;
+            background: linear-gradient(135deg, #818cf8, #c084fc);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text; margin-bottom: 12px; position: relative;
+        }
+        .header .subtitle { font-size: 1.1rem; color: var(--text-secondary); position: relative; }
+        .header .meta { margin-top: 16px; font-size: 0.85rem; color: var(--text-muted); position: relative; }
+
+        /* Section */
+        .section { margin-bottom: 40px; }
+        .section-title {
+            font-size: 1.5rem; font-weight: 700; margin-bottom: 20px;
+            padding-left: 16px; border-left: 4px solid var(--primary);
+        }
+
+        /* KPI Cards */
+        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 32px; }
+        .kpi-card {
+            background: var(--bg-card); border-radius: 16px; padding: 24px;
+            border: 1px solid var(--border); box-shadow: var(--shadow);
+            transition: transform 0.2s; position: relative; overflow: hidden;
+        }
+        .kpi-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+        .kpi-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+        .kpi-card:nth-child(1)::before { background: var(--gradient-1); }
+        .kpi-card:nth-child(2)::before { background: var(--gradient-2); }
+        .kpi-card:nth-child(3)::before { background: var(--gradient-3); }
+        .kpi-card:nth-child(4)::before { background: var(--gradient-4); }
+        .kpi-card:nth-child(5)::before { background: linear-gradient(135deg, #10b981, #06b6d4); }
+        .kpi-card:nth-child(6)::before { background: linear-gradient(135deg, #f59e0b, #ef4444); }
+        .kpi-card .label { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .kpi-card .value { font-size: 1.8rem; font-weight: 800; background: var(--gradient-1); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .kpi-card .detail { font-size: 0.8rem; color: var(--text-muted); margin-top: 4px; }
+
+        /* Chart */
+        .chart-container {
+            background: var(--bg-card); border-radius: 16px; padding: 24px;
+            border: 1px solid var(--border); box-shadow: var(--shadow); margin-bottom: 24px;
+        }
+        .chart-container h3 { font-size: 1rem; font-weight: 600; margin-bottom: 16px; color: var(--text-secondary); }
+        .chart { width: 100%; height: 400px; }
+        .chart-row { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+
+        /* Tables */
+        .table-container {
+            background: var(--bg-card); border-radius: 16px; padding: 24px;
+            border: 1px solid var(--border); box-shadow: var(--shadow); overflow-x: auto; margin-bottom: 24px;
+        }
+        .table-container h3 { font-size: 1rem; font-weight: 600; margin-bottom: 16px; color: var(--text-secondary); }
+        table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+        th { background: rgba(99,102,241,0.1); color: var(--primary-light); font-weight: 600; padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--border); white-space: nowrap; }
+        td { padding: 10px 16px; border-bottom: 1px solid var(--border); color: var(--text-secondary); }
+        tr:hover td { background: rgba(99,102,241,0.05); }
+
+        .badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; }
+        .badge-success { background: rgba(16,185,129,0.15); color: #10b981; }
+        .badge-danger { background: rgba(239,68,68,0.15); color: #ef4444; }
+        .badge-warning { background: rgba(245,158,11,0.15); color: #f59e0b; }
+        .badge-info { background: rgba(99,102,241,0.15); color: #818cf8; }
+
+        .trend-up { color: #10b981; font-weight: 600; }
+        .trend-down { color: #ef4444; font-weight: 600; }
+        .trend-new { color: #f59e0b; font-weight: 600; }
+
+        /* Analysis */
+        .analysis-card {
+            background: var(--bg-card); border-radius: 16px; padding: 24px;
+            border: 1px solid var(--border); box-shadow: var(--shadow); margin-bottom: 24px;
+        }
+        .analysis-card h3 { font-size: 1.1rem; font-weight: 600; margin-bottom: 12px; color: var(--accent); }
+        .analysis-card p, .analysis-card li { color: var(--text-secondary); margin-bottom: 8px; line-height: 1.8; }
+        .analysis-card ul { padding-left: 20px; }
+        .analysis-card strong { color: var(--text); }
+
+        .phase-tag { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; margin-right: 8px; }
+        .phase-1 { background: rgba(239,68,68,0.15); color: #ef4444; }
+        .phase-2 { background: rgba(99,102,241,0.15); color: #818cf8; }
+        .phase-3 { background: rgba(16,185,129,0.15); color: #10b981; }
+
+        /* Recommendations */
+        .rec-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+        .rec-card {
+            background: var(--bg-card); border-radius: 16px; padding: 20px;
+            border: 1px solid var(--border); box-shadow: var(--shadow); transition: transform 0.2s;
+        }
+        .rec-card:hover { transform: translateY(-2px); }
+        .rec-card .rec-num {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 28px; height: 28px; border-radius: 8px; background: var(--gradient-1);
+            color: white; font-size: 0.8rem; font-weight: 700; margin-bottom: 12px;
+        }
+        .rec-card h4 { font-size: 0.95rem; font-weight: 600; margin-bottom: 8px; }
+        .rec-card p { font-size: 0.85rem; color: var(--text-muted); line-height: 1.6; }
+
+        .footer { text-align: center; padding: 32px; color: var(--text-muted); font-size: 0.85rem; border-top: 1px solid var(--border); margin-top: 48px; }
+
+        @media (max-width: 768px) {
+            .container { padding: 16px; }
+            .header h1 { font-size: 1.6rem; }
+            .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+            .kpi-card .value { font-size: 1.4rem; }
+            .chart-row { grid-template-columns: 1fr; }
+            .chart { height: 300px; }
+            .rec-grid { grid-template-columns: 1fr; }
+            table { font-size: 0.8rem; }
+            th, td { padding: 8px 10px; }
+        }
+        @media (max-width: 480px) {
+            .kpi-grid { grid-template-columns: 1fr; }
+            .header { padding: 32px 16px; }
+            .header h1 { font-size: 1.3rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <!-- Header -->
+    <div class="header">
+        <h1>🎯 密室行业近90天搜索数据分析报告</h1>
+        <div class="subtitle">分析区间：2026-02-08 至 2026-05-08（共90天）</div>
+        <div class="meta">报告生成时间：2026-05-11 | 数据来源：美团搜索平台 | 分析维度：QV / CTR / 搜索词</div>
+    </div>
+
+    <!-- KPI Cards -->
+    <div class="section">
+        <h2 class="section-title">📊 核心指标概览</h2>
+        <div class="kpi-grid">
+            <div class="kpi-card"><div class="label">90天总QV</div><div class="value">4,349万</div><div class="detail">搜索请求量</div></div>
+            <div class="kpi-card"><div class="label">日均QV</div><div class="value">48.3万</div><div class="detail">次/天</div></div>
+            <div class="kpi-card"><div class="label">整体CTR</div><div class="value">37.63%</div><div class="detail">点击转化率</div></div>
+            <div class="kpi-card"><div class="label">QV峰值</div><div class="value">107.6万</div><div class="detail">02-21 春节高峰</div></div>
+            <div class="kpi-card"><div class="label">QV谷值</div><div class="value">22.4万</div><div class="detail">04-14 清明后低谷</div></div>
+            <div class="kpi-card"><div class="label">周末溢价</div><div class="value">+59%</div><div class="detail">66.1万 vs 41.5万</div></div>
+        </div>
+    </div>
+
+    <!-- Monthly Charts -->
+    <div class="section">
+        <h2 class="section-title">📈 月度数据对比</h2>
+        <div class="chart-row">
+            <div class="chart-container">
+                <h3>月度总QV趋势（万次）</h3>
+                <div id="chart-monthly-qv" class="chart"></div>
+            </div>
+            <div class="chart-container">
+                <h3>月度CTR趋势</h3>
+                <div id="chart-monthly-ctr" class="chart"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Monthly Table -->
+    <div class="section">
+        <div class="table-container">
+            <h3>📋 月度对比明细</h3>
+            <table>
+                <thead><tr><th>月份</th><th>总QV</th><th>日均QV</th><th>CTR</th></tr></thead>
+                <tbody>
+                    <tr><td>2026-02</td><td><strong>1,517万</strong></td><td>72.2万</td><td>34.2%</td></tr>
+                    <tr><td>2026-03</td><td><strong>1,165万</strong></td><td>37.6万</td><td>37.7%</td></tr>
+                    <tr><td>2026-04</td><td><strong>1,163万</strong></td><td>38.8万</td><td>40.7%</td></tr>
+                    <tr><td>2026-05（1-8日）</td><td><strong>504万</strong></td><td>63.0万</td><td>40.7%</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Trend Analysis -->
+    <div class="section">
+        <h2 class="section-title">📉 QV与CTR趋势分析</h2>
+        <div class="analysis-card">
+            <h3>QV 趋势三阶段特征</h3>
+            <div style="margin-bottom:16px"><span class="phase-tag phase-1">第一阶段：春节高峰期</span><span style="color:var(--text-muted);font-size:0.85rem">2026-02-08 至 02-23</span></div>
+            <ul>
+                <li>02-21（大年初三）达到 <strong>107.6万</strong> 峰值，为90天最高</li>
+                <li>春节期间（02-17~02-23）日均QV <strong>98.2万</strong>，节后第一周骤降至约40万</li>
+                <li>CTR 在春节期间偏低（<strong>33.7%</strong>），节前用户浏览/比价行为多于实际点击</li>
+            </ul>
+            <div style="margin:16px 0"><span class="phase-tag phase-2">第二阶段：节后平稳整理期</span><span style="color:var(--text-muted);font-size:0.85rem">2026-02-24 至 04-03</span></div>
+            <ul>
+                <li>节后 QV 迅速回落至日均 37~45万，周末周期性高峰明显</li>
+                <li>CTR 持续走高，从2月底的34%升至3月底的39%，搜索意图更加明确</li>
+            </ul>
+            <div style="margin:16px 0"><span class="phase-tag phase-3">第三阶段：清明低谷+持续回升期</span><span style="color:var(--text-muted);font-size:0.85rem">2026-04-04 至 05-08</span></div>
+            <ul>
+                <li>04-04~06 清明小长假 QV 日均 <strong>75.6万</strong>，CTR 下滑至 <strong>36.4%</strong></li>
+                <li>节后 04-07~04-13 出现明显低谷（约22-28万/天），04-14 达90天最低（22.4万）</li>
+                <li>五一（05-01~05-08）日均 QV <strong>63.0万</strong>，CTR 升至 <strong>40.7%</strong>（90天最高）</li>
+            </ul>
+        </div>
+        <div class="analysis-card">
+            <h3>CTR 整体趋势：从 34% 升至 41%</h3>
+            <p>随着春节期间大量「浏览/比价」型流量退潮，搜索质量持续提升。用户搜索意图越来越明确，CTR 呈现稳步上升趋势，五一假期达到 40.7% 为90天最高。</p>
+        </div>
+    </div>
+
+    <!-- TOP20 -->
+    <div class="section">
+        <h2 class="section-title">🔍 TOP20 搜索词（近30天）</h2>
+        <div class="chart-row">
+            <div class="chart-container">
+                <h3>TOP10 搜索词 QV 排行</h3>
+                <div id="chart-top10-qv" class="chart"></div>
+            </div>
+            <div class="chart-container">
+                <h3>TOP10 搜索词 CTR 排行</h3>
+                <div id="chart-top10-ctr" class="chart"></div>
+            </div>
+        </div>
+        <div class="table-container">
+            <h3>📋 完整TOP20搜索词明细</h3>
+            <table>
+                <thead><tr><th>排名</th><th>搜索词</th><th>近30天QV</th><th>CTR</th><th>MOM</th></tr></thead>
+                <tbody>
+                    <tr><td>1</td><td>密室逃脱</td><td>763,046</td><td>77.8%</td><td class="trend-up">+11.2%</td></tr>
+                    <tr><td>2</td><td>密室脱逃</td><td>611,193</td><td>78.9%</td><td class="trend-up">+8.1%</td></tr>
+                    <tr><td>3</td><td>密室</td><td>507,423</td><td>77.5%</td><td class="trend-up">+14.7%</td></tr>
+                    <tr><td>4</td><td>剧本杀</td><td>464,394</td><td>16.2%</td><td class="trend-up">+5.9%</td></tr>
+                    <tr><td>5</td><td>拼豆</td><td>74,161</td><td>5.4%</td><td class="trend-up">+80.0%</td></tr>
+                    <tr><td>6</td><td>网吧</td><td>55,718</td><td>1.7%</td><td class="trend-up">+25.5%</td></tr>
+                    <tr><td>7</td><td>长藤密室</td><td>44,512</td><td>81.0%</td><td class="trend-up">+21.2%</td></tr>
+                    <tr><td>8</td><td>桌游</td><td>40,331</td><td>13.3%</td><td class="trend-up">+14.1%</td></tr>
+                    <tr><td>9</td><td>鬼屋</td><td>31,302</td><td>51.5%</td><td class="trend-down">-0.1%</td></tr>
+                    <tr><td>10</td><td>恋爱体验馆</td><td>30,267</td><td>8.2%</td><td class="trend-up">+35.4%</td></tr>
+                    <tr><td>11</td><td>洗浴</td><td>25,487</td><td>1.3%</td><td class="trend-up">+2.9%</td></tr>
+                    <tr><td>12</td><td>万达</td><td>24,873</td><td>5.1%</td><td class="trend-down">-6.8%</td></tr>
+                    <tr><td>13</td><td>密室逃脱（繁体）</td><td>22,325</td><td>83.9%</td><td class="trend-up">+13.3%</td></tr>
+                    <tr><td>14</td><td>娱乐</td><td>21,587</td><td>13.8%</td><td class="trend-up">+2.3%</td></tr>
+                    <tr><td>15</td><td>溃烂缪斯</td><td>21,174</td><td>91.2%</td><td class="trend-down">-10.9%</td></tr>
+                    <tr><td>16</td><td>玩</td><td>20,198</td><td>13.1%</td><td class="trend-up">+5.1%</td></tr>
+                    <tr><td>17</td><td>关你鬼室大型密室逃脱</td><td>20,048</td><td>90.0%</td><td class="trend-up">+20.5%</td></tr>
+                    <tr><td>18</td><td>密室逃脱真人NPC</td><td>18,212</td><td>74.5%</td><td class="trend-up">+17.8%</td></tr>
+                    <tr><td>19</td><td>长藤鬼校</td><td>18,139</td><td>69.9%</td><td class="trend-up">+11.7%</td></tr>
+                    <tr><td>20</td><td>游乐园</td><td>17,041</td><td>4.3%</td><td class="trend-down">-4.3%</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Anomaly -->
+    <div class="section">
+        <h2 class="section-title">⚡ 异动词识别（近30天 vs 前30天）</h2>
+        <div class="chart-container">
+            <h3>涨幅异动词 MOM 对比</h3>
+            <div id="chart-anomaly" class="chart"></div>
+        </div>
+        <div class="table-container">
+            <h3>📈 涨幅异动词</h3>
+            <table>
+                <thead><tr><th>搜索词</th><th>近30天QV</th><th>前30天QV</th><th>MOM</th><th>CTR</th><th>类型</th></tr></thead>
+                <tbody>
+                    <tr><td>拼豆</td><td>74,161</td><td>41,193</td><td class="trend-up">+80.0%</td><td>5.4%</td><td><span class="badge badge-danger">爆发增长</span></td></tr>
+                    <tr><td>恋爱体验馆</td><td>30,267</td><td>22,354</td><td class="trend-up">+35.4%</td><td>8.2%</td><td><span class="badge badge-success">稳步增长</span></td></tr>
+                    <tr><td>密室逃脱真人NPC</td><td>18,212</td><td>15,463</td><td class="trend-up">+17.8%</td><td>74.5%</td><td><span class="badge badge-info">细分场景爆发</span></td></tr>
+                    <tr><td>诡怪先生密室</td><td>8,011</td><td>0</td><td class="trend-new">新词</td><td>84.0%</td><td><span class="badge badge-warning">新品牌上线</span></td></tr>
+                    <tr><td>诡秘怪谈密室逃脱</td><td>7,777</td><td>0</td><td class="trend-new">新词</td><td>89.9%</td><td><span class="badge badge-warning">新品牌上线</span></td></tr>
+                    <tr><td>谜密室逃脱Enigma</td><td>6,227</td><td>0</td><td class="trend-new">新词</td><td>92.0%</td><td><span class="badge badge-warning">新品牌上线</span></td></tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="table-container">
+            <h3>📉 跌幅/归零词</h3>
+            <table>
+                <thead><tr><th>搜索词</th><th>近30天QV</th><th>前30天QV</th><th>MOM</th><th>类型</th></tr></thead>
+                <tbody>
+                    <tr><td>EQN方程式（北京路店）</td><td>0</td><td>3,811</td><td class="trend-down">-100%</td><td><span class="badge badge-danger">疑似关店</span></td></tr>
+                    <tr><td>UMEPLAY逃脱艺术</td><td>0</td><td>3,209</td><td class="trend-down">-100%</td><td><span class="badge badge-danger">门店/品牌变动</span></td></tr>
+                    <tr><td>三更密室逃脱</td><td>0</td><td>3,337</td><td class="trend-down">-100%</td><td><span class="badge badge-danger">下架/关店</span></td></tr>
+                    <tr><td>四个朋友</td><td>0</td><td>3,681</td><td class="trend-down">-100%</td><td><span class="badge badge-danger">内容/主题下线</span></td></tr>
+                    <tr><td>密室重恐</td><td>0</td><td>3,247</td><td class="trend-down">-100%</td><td><span class="badge badge-danger">下架/关店</span></td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Cause Analysis -->
+    <div class="section">
+        <h2 class="section-title">🔬 原因分析</h2>
+        <div class="analysis-card">
+            <h3>1. 节假日效应（主驱动）</h3>
+            <ul>
+                <li><strong>春节</strong>：日均 QV 达正常水平 2.4 倍，但 CTR 偏低（33.7%），浏览比价行为多</li>
+                <li><strong>清明</strong>：QV 拉升但节后出现约1~2周「娱乐透支效应」低谷</li>
+                <li><strong>五一</strong>：CTR 达90天最高（40.7%），用户提前规划意愿强、搜索更精准</li>
+            </ul>
+        </div>
+        <div class="analysis-card">
+            <h3>2. 行业趋势</h3>
+            <ul>
+                <li><strong>沉浸式/NPC 型主题崛起</strong>：「真人NPC」词涨幅+17.8%，多个新高CTR品牌词出道（84-92%）</li>
+                <li><strong>情侣约会场景增长</strong>：「恋爱体验馆」+35.4%，CTR从4.7%升至8.2%，供给正在跟进</li>
+                <li><strong>行业洗牌明显</strong>：5个老品牌词归零，3个新品牌词新出</li>
+            </ul>
+        </div>
+        <div class="analysis-card">
+            <h3>3. 低CTR噪声词需关注</h3>
+            <ul>
+                <li>「网吧」(CTR 1.7%)、「洗浴」(CTR 1.3%) 大量无效流量，建议审查改写策略</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Recommendations -->
+    <div class="section">
+        <h2 class="section-title">💡 运营建议</h2>
+        <div class="rec-grid">
+            <div class="rec-card">
+                <div class="rec-num">1</div>
+                <h4>节前预热</h4>
+                <p>大节点前1-2周提前挂载热搜词，重点布局「密室逃脱真人NPC」等细分场景</p>
+            </div>
+            <div class="rec-card">
+                <div class="rec-num">2</div>
+                <h4>新品牌快速接入</h4>
+                <p>诡怪先生、谜密室Enigma等高CTR新词，加速改写词配置</p>
+            </div>
+            <div class="rec-card">
+                <div class="rec-num">3</div>
+                <h4>情侣场景专题</h4>
+                <p>「恋爱体验馆」专题频道/Banner联动提升转化</p>
+            </div>
+            <div class="rec-card">
+                <div class="rec-num">4</div>
+                <h4>弱意图词清理</h4>
+                <p>审查「网吧」「洗浴」等低CTR词的改写来源</p>
+            </div>
+            <div class="rec-card">
+                <div class="rec-num">5</div>
+                <h4>供给健康度监控</h4>
+                <p>周期性核查归零品牌词是否为正常下架</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <p>📊 密室行业近90天搜索数据分析报告 | 数据来源：美团搜索平台</p>
+        <p style="margin-top:8px">报告生成时间：2026-05-11 22:47 | 分析区间：2026-02-08 至 2026-05-08</p>
+    </div>
+</div>
+
+<script>
+// Color theme
+const colorPalette = ['#818cf8', '#a78bfa', '#c084fc', '#e879f9', '#6366f1', '#8b5cf6'];
+const gradientColors = {
+    purple: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+        { offset: 0, color: 'rgba(139, 92, 246, 0.8)' },
+        { offset: 1, color: 'rgba(99, 102, 241, 0.2)' }
+    ]),
+    blue: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+        { offset: 0, color: 'rgba(99, 102, 241, 0.8)' },
+        { offset: 1, color: 'rgba(59, 130, 246, 0.2)' }
+    ])
+};
+
+// Common options
+const commonOpt = {
+    backgroundColor: 'transparent',
+    textStyle: { color: '#94a3b8' },
+    grid: { top: 40, right: 30, bottom: 40, left: 60, containLabel: true }
+};
+
+// 1. Monthly QV Bar Chart
+const chartMonthlyQV = echarts.init(document.getElementById('chart-monthly-qv'));
+chartMonthlyQV.setOption({
+    ...commonOpt,
+    tooltip: { trigger: 'axis', backgroundColor: '#1e293b', borderColor: '#334155', textStyle: { color: '#f1f5f9' } },
+    xAxis: { type: 'category', data: ['2月', '3月', '4月', '5月(1-8日)'], axisLine: { lineStyle: { color: '#334155' } }, axisLabel: { color: '#94a3b8' } },
+    yAxis: { type: 'value', name: '万次', axisLine: { lineStyle: { color: '#334155' } }, splitLine: { lineStyle: { color: '#1e293b' } }, axisLabel: { color: '#94a3b8' } },
+    series: [{
+        type: 'bar',
+        data: [1517, 1165, 1163, 504],
+        barWidth: '50%',
+        itemStyle: {
+            borderRadius: [8, 8, 0, 0],
+            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                { offset: 0, color: '#a78bfa' },
+                { offset: 1, color: '#6366f1' }
+            ])
+        },
+        label: { show: true, position: 'top', color: '#a78bfa', fontWeight: 'bold', formatter: '{c}万' }
+    }]
+});
+
+// 2. Monthly CTR Line Chart
+const chartMonthlyCTR = echarts.init(document.getElementById('chart-monthly-ctr'));
+chartMonthlyCTR.setOption({
+    ...commonOpt,
+    tooltip: { trigger: 'axis', backgroundColor: '#1e293b', borderColor: '#334155', textStyle: { color: '#f1f5f9' }, formatter: '{b}<br/>{a}: {c}%' },
+    xAxis: { type: 'category', data: ['2月', '3月', '4月', '5月(1-8日)'], axisLine: { lineStyle: { color: '#334155' } }, axisLabel: { color: '#94a3b8' } },
+    yAxis: { type: 'value', name: 'CTR (%)', min: 30, max: 45, axisLine: { lineStyle: { color: '#334155' } }, splitLine: { lineStyle: { color: '#1e293b' } }, axisLabel: { color: '#94a3b8' } },
+    series: [{
+        name: 'CTR',
+        type: 'line',
+        data: [34.2, 37.7, 40.7, 40.7],
+        smooth: true,
+        lineStyle: { color: '#c084fc', width: 3 },
+        itemStyle: { color: '#c084fc', borderWidth: 2 },
+        areaStyle: {
+            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                { offset: 0, color: 'rgba(192, 132, 252, 0.3)' },
+                { offset: 1, color: 'rgba(192, 132, 252, 0.02)' }
+            ])
+        },
+        symbol: 'circle',
+        symbolSize: 10,
+        label: { show: true, position: 'top', color: '#c084fc', fontWeight: 'bold', formatter: '{c}%' }
+    }]
+});
+
+// 3. TOP10 QV Horizontal Bar
+const chartTop10QV = echarts.init(document.getElementById('chart-top10-qv'));
+const top10Names = ['恋爱体验馆','鬼屋','桌游','长藤密室','网吧','拼豆','剧本杀','密室','密室脱逃','密室逃脱'];
+const top10QV = [30267, 31302, 40331, 44512, 55718, 74161, 464394, 507423, 611193, 763046];
+chartTop10QV.setOption({
+    ...commonOpt,
+    grid: { top: 20, right: 80, bottom: 20, left: 120, containLabel: false },
+    tooltip: { trigger: 'axis', backgroundColor: '#1e293b', borderColor: '#334155', textStyle: { color: '#f1f5f9' } },
+    xAxis: { type: 'value', axisLine: { lineStyle: { color: '#334155' } }, splitLine: { lineStyle: { color: '#1e293b' } }, axisLabel: { color: '#94a3b8' } },
+    yAxis: { type: 'category', data: top10Names, axisLine: { lineStyle: { color: '#334155' } }, axisLabel: { color: '#94a3b8', fontSize: 11 } },
+    series: [{
+        type: 'bar',
+        data: top10QV,
+        barWidth: '60%',
+        itemStyle: {
+            borderRadius: [0, 6, 6, 0],
+            color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
+                { offset: 0, color: '#6366f1' },
+                { offset: 1, color: '#a78bfa' }
+            ])
+        },
+        label: { show: true, position: 'right', color: '#94a3b8', fontSize: 11, formatter: function(p){ return p.value >= 10000 ? (p.value/10000).toFixed(1)+'万' : p.value.toLocaleString(); } }
+    }]
+});
+
+// 4. TOP10 CTR Horizontal Bar
+const chartTop10CTR = echarts.init(document.getElementById('chart-top10-ctr'));
+const top10CTRNames = ['拼豆','恋爱体验馆','桌游','网吧','剧本杀','鬼屋','密室逃脱真人NPC','密室','密室逃脱','长藤密室'];
+const top10CTRData = [5.4, 8.2, 13.3, 1.7, 16.2, 51.5, 74.5, 77.5, 77.8, 81.0];
+chartTop10CTR.setOption({
+    ...commonOpt,
+    grid: { top: 20, right: 60, bottom: 20, left: 140, containLabel: false },
+    tooltip: { trigger: 'axis', backgroundColor: '#1e293b', borderColor: '#334155', textStyle: { color: '#f1f5f9' }, formatter: '{b}: {c}%' },
+    xAxis: { type: 'value', max: 100, axisLine: { lineStyle: { color: '#334155' } }, splitLine: { lineStyle: { color: '#1e293b' } }, axisLabel: { color: '#94a3b8', formatter: '{value}%' } },
+    yAxis: { type: 'category', data: top10CTRNames, axisLine: { lineStyle: { color: '#334155' } }, axisLabel: { color: '#94a3b8', fontSize: 11 } },
+    series: [{
+        type: 'bar',
+        data: top10CTRData,
+        barWidth: '60%',
+        itemStyle: {
+            borderRadius: [0, 6, 6, 0],
+            color: function(params) {
+                if (params.value >= 50) return new echarts.graphic.LinearGradient(0, 0, 1, 0, [{ offset: 0, color: '#10b981' }, { offset: 1, color: '#06b6d4' }]);
+                if (params.value >= 10) return new echarts.graphic.LinearGradient(0, 0, 1, 0, [{ offset: 0, color: '#f59e0b' }, { offset: 1, color: '#eab308' }]);
+                return new echarts.graphic.LinearGradient(0, 0, 1, 0, [{ offset: 0, color: '#ef4444' }, { offset: 1, color: '#f97316' }]);
+            }
+        },
+        label: { show: true, position: 'right', color: '#94a3b8', fontSize: 11, formatter: '{c}%' }
+    }]
+});
+
+// 5. Anomaly Chart
+const chartAnomaly = echarts.init(document.getElementById('chart-anomaly'));
+chartAnomaly.setOption({
+    ...commonOpt,
+    grid: { top: 20, right: 60, bottom: 20, left: 150, containLabel: false },
+    tooltip: { trigger: 'axis', backgroundColor: '#1e293b', borderColor: '#334155', textStyle: { color: '#f1f5f9' } },
+    xAxis: { type: 'value', axisLine: { lineStyle: { color: '#334155' } }, splitLine: { lineStyle: { color: '#1e293b' } }, axisLabel: { color: '#94a3b8' } },
+    yAxis: { type: 'category', data: ['密室逃脱真人NPC', '恋爱体验馆', '拼豆', '谜密室逃脱Enigma', '诡秘怪谈密室逃脱', '诡怪先生密室'], axisLine: { lineStyle: { color: '#334155' } }, axisLabel: { color: '#94a3b8', fontSize: 11 } },
+    series: [
+        {
+            name: '近30天QV',
+            type: 'bar',
+            data: [18212, 30267, 74161, 6227, 7777, 8011],
+            barWidth: '35%',
+            itemStyle: { borderRadius: [0, 6, 6, 0], color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [{ offset: 0, color: '#6366f1' }, { offset: 1, color: '#a78bfa' }]) },
+            label: { show: true, position: 'right', color: '#a78bfa', fontSize: 11, formatter: function(p){ return p.value >= 10000 ? (p.value/10000).toFixed(1)+'万' : p.value.toLocaleString(); } }
+        },
+        {
+            name: '前30天QV',
+            type: 'bar',
+            data: [15463, 22354, 41193, 0, 0, 0],
+            barWidth: '35%',
+            itemStyle: { borderRadius: [0, 6, 6, 0], color: 'rgba(100, 116, 139, 0.4)' },
+            label: { show: true, position: 'right', color: '#64748b', fontSize: 11, formatter: function(p){ if(p.value === 0) return '新词'; return p.value >= 10000 ? (p.value/10000).toFixed(1)+'万' : p.value.toLocaleString(); } }
+        }
+    ],
+    legend: { data: ['近30天QV', '前30天QV'], textStyle: { color: '#94a3b8' }, top: 0, right: 0 }
+});
+
+// Responsive
+window.addEventListener('resize', function() {
+    chartMonthlyQV.resize();
+    chartMonthlyCTR.resize();
+    chartTop10QV.resize();
+    chartTop10CTR.resize();
+    chartAnomaly.resize();
+});
+</script>
+</body>
+</html>
